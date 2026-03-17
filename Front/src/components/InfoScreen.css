@@ -1,0 +1,97 @@
+.info-screen {
+  flex: 1;
+  background-color: #2ecc71;
+  border: 8px solid #bdc3c7;
+  border-radius: 10px;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  font-family: "Courier New", monospace;
+  color: #05331a;
+}
+
+.info-screen h3 {
+  border-bottom: 2px solid #05331a;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  font-size: 1.1rem;
+}
+
+.stats-display {
+  text-align: left;
+  width: 100%;
+  line-height: 1.6;
+}
+.stats-display p {
+  font-weight: bold;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.status-big {
+  font-size: 1.8rem;
+  font-weight: 900;
+  margin-top: 10px;
+  text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.3);
+}
+
+.game-over-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+}
+
+.reveal-box {
+  background: rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+  width: 100%;
+  margin-top: 5px;
+}
+
+.reveal-box p {
+  font-size: 0.7rem;
+  margin-bottom: 5px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.solution-icons {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+.mini-poke {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.check-button,
+.reset-button {
+  width: 100%;
+  padding: 15px;
+  margin-top: 10px;
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  background-color: #34495e;
+  border-bottom: 4px solid #2c3e50;
+  transition: background-color 0.2s;
+}
+
+.check-button:hover,
+.reset-button:hover {
+  background-color: #5d6d7e;
+}
+.check-button:active,
+.reset-button:active {
+  transform: translateY(2px);
+  border-bottom: 2px solid #2c3e50;
+}
