@@ -95,3 +95,64 @@
   transform: translateY(2px);
   border-bottom: 2px solid #2c3e50;
 }
+
+/* DIFFICULTY BUTTONS */
+.difficulty-zone {
+  margin-top: auto;
+  text-align: center;
+  padding-top: 15px;
+}
+
+.select-label {
+  font-size: 0.65rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #05331a;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.difficulty-selector {
+  display: flex;
+  gap: 8px;
+}
+
+.diff-btn {
+  flex: 1;
+  padding: 6px 4px;
+  font-family: "Courier New", monospace;
+  font-size: 0.75rem;
+  font-weight: bold;
+  cursor: pointer;
+  border: 2px solid #05331a;
+  background-color: transparent;
+  color: #05331a;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+}
+
+.diff-btn:hover:not(.active):not(:disabled) {
+  background-color: rgba(5, 51, 26, 0.2);
+}
+
+.diff-btn:active:not(.active):not(:disabled) {
+  transform: scale(0.95);
+}
+
+.diff-btn.active {
+  background-color: #05331a;
+  color: #2ecc71;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+}
+
+.diff-btn.disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+  border-style: dotted;
+}
+
+.diff-btn.active.disabled {
+  opacity: 1;
+  border-style: solid;
+}

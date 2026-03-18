@@ -38,12 +38,21 @@ function App() {
   /* NEW: STATS STATE */
   const [stats, setStats] = useState({ total: 0, wins: 0, lastAttempts: 0 });
 
+  /* NEW: DIFFICULTY STATE */
+  const [difficulty, setDifficulty] = useState(null);
+
   /* GAME INITIALIZATION */
-  const generateSecret = () => {
-    // Allows duplicates in the secret code
-    const newSecret = Array(5)
-      .fill(null)
-      .map(() => ALL_POKEMON[Math.floor(Math.random() * ALL_POKEMON.length)]);
+  const generateSecret = (mode = difficulty) => {
+    // Allows duplicates in the secret code if hard, unique if easy
+    if (!mode) return;
+    let newSecret = [];
+    if (mode === "easy") {
+      newSecret = [...ALL_POKEMON].sort(() => Math.random() - 0.5).slice(0, 5);
+    } else {
+      newSecret = Array(5)
+        .fill(null)
+        .map(() => ALL_POKEMON[Math.floor(Math.random() * ALL_POKEMON.length)]);
+    }
     setSecretCode(newSecret);
   };
 
@@ -177,7 +186,7 @@ function App() {
 
   /* GAMEPLAY LOGIC AND ACTIONS */
   const resetGame = () => {
-    generateSecret();
+    setDifficulty(null); // Reset difficulty selection
     setAttempts(Array(10).fill([null, null, null, null, null]));
     setResults(Array(10).fill([null, null, null, null, null]));
     setCurrentRow(0);
@@ -186,7 +195,7 @@ function App() {
   };
 
   const selectPokemon = (name) => {
-    if (isGameOver) return;
+    if (isGameOver || !difficulty) return;
     const updated = [...attempts];
     const row = [...updated[currentRow]];
     const index = row.indexOf(null);
@@ -207,6 +216,7 @@ function App() {
   };
 
   const validateAttempt = () => {
+    if (!difficulty) return;
     const current = attempts[currentRow];
     if (current.includes(null)) return;
 
@@ -287,6 +297,10 @@ function App() {
               stats={stats}
               statusMessage={statusMessage}
               secretCode={secretCode}
+              difficulty={difficulty}
+              setDifficulty={setDifficulty}
+              generateSecret={generateSecret}
+              attempts={attempts}
             />
             <button className="check-button" onClick={validateAttempt}>
               CHECK
