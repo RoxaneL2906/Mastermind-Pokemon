@@ -11,6 +11,12 @@ function RulesModal({ onClose }) {
             <h3>🇫🇷 RÈGLES DU JEU</h3>
             <p>Devinez le code secret de 5 Pokémon en 10 essais !</p>
 
+            {/* Cette div active la petite boîte bleue de ton CSS */}
+            <div className="interaction-info">
+              <p>👉 Cliquez sur un Pokémon en bas pour le placer.</p>
+              <p>❌ Cliquez sur un Pokémon placé pour le retirer.</p>
+            </div>
+
             <div className="color-legend">
               <p>
                 <span className="dot green"></span> <strong>VERT :</strong>{" "}
@@ -40,10 +46,15 @@ function RulesModal({ onClose }) {
 
           <div className="lang-divider"></div>
 
-          {/* Section Anglaise */}
           <div className="lang-section">
             <h3>🇬🇧 GAME RULES</h3>
             <p>Guess the 5 secret Pokémon in 10 attempts!</p>
+
+            {/* Même chose pour la version anglaise */}
+            <div className="interaction-info">
+              <p>👉 Click a Pokémon at the bottom to place it.</p>
+              <p>❌ Click a placed Pokémon to remove it.</p>
+            </div>
 
             <div className="color-legend">
               <p>

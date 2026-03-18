@@ -138,3 +138,17 @@
 .info-trigger:hover {
   background-color: #2980b9;
 }
+
+.interaction-info {
+  background: rgba(52, 152, 219, 0.1);
+  border-left: 3px solid #3498db;
+  padding: 8px;
+  margin: 10px 0;
+  border-radius: 0 4px 4px 0;
+}
+
+.interaction-info p {
+  font-size: 0.75rem !important;
+  margin-bottom: 4px !important;
+  color: #2980b9;
+}
