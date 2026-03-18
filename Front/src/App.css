@@ -85,26 +85,52 @@ body,
 
 .small-leds {
   display: flex;
+  align-items: center; 
   gap: 8px;
   margin-top: 5px;
 }
+
 .led {
   width: 15px;
   height: 15px;
   border-radius: 50%;
   border: 2px solid #333;
 }
+
 .led.red {
   background-color: #e74c3c;
   box-shadow: 0 0 5px #e74c3c;
 }
+
 .led.yellow {
   background-color: #f1c40f;
   box-shadow: 0 0 5px #f1c40f;
 }
+
 .led.green {
   background-color: #2ecc71;
   box-shadow: 0 0 5px #2ecc71;
+}
+
+/* INFO BUTTON STYLED AS LED */
+.led.info-btn {
+  background-color: #3498db;
+  color: white;
+  font-family: serif;
+  font-size: 10px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s;
+}
+
+.led.info-btn:hover {
+  filter: brightness(1.2);
+  transform: scale(1.1);
 }
 
 /* GAME LAYOUT */

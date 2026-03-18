@@ -12,42 +12,49 @@ function Auth({
 }) {
   const [showPassword, setShowPassword] = useState(false);
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    auth();
+  };
+
   return (
     /* LOGIN AND REGISTRATION VIEW */
     <div className="auth-container">
       <div className="auth-box">
         <h2>{authMode === "login" ? "LOGIN" : "NEW TRAINER ? "}</h2>
 
-        <input
-          type="text"
-          placeholder="TRAINER NAME"
-          value={formData.username}
-          onChange={(e) =>
-            setFormData({ ...formData, username: e.target.value })
-          }
-        />
-
-        <div className="password-wrapper">
+        <form onSubmit={handleSubmit}>
           <input
-            type={showPassword ? "text" : "password"}
-            placeholder="PASSWORD"
-            value={formData.password}
+            type="text"
+            placeholder="TRAINER NAME"
+            value={formData.username}
             onChange={(e) =>
-              setFormData({ ...formData, password: e.target.value })
+              setFormData({ ...formData, username: e.target.value })
             }
           />
-          <button
-            type="button"
-            className="password-toggle"
-            onClick={() => setShowPassword(!showPassword)}
-          >
-            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-          </button>
-        </div>
 
-        {statusMessage && <p className="status-msg">{statusMessage}</p>}
+          <div className="password-wrapper">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="PASSWORD"
+              value={formData.password}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
+            />
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
 
-        <button onClick={auth}>VALIDATE</button>
+          {statusMessage && <p className="status-msg">{statusMessage}</p>}
+
+          <button type="submit">VALIDATE</button>
+        </form>
 
         <p
           className="auth-link"

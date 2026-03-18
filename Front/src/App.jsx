@@ -6,6 +6,7 @@ import Auth from "./components/Auth";
 import InfoScreen from "./components/InfoScreen";
 import Board from "./components/Board";
 import SelectionArea from "./components/SelectionArea";
+import RulesModal from "./components/RulesModal";
 
 const ALL_POKEMON = [
   "Evoli",
@@ -40,6 +41,9 @@ function App() {
 
   /* NEW: DIFFICULTY STATE */
   const [difficulty, setDifficulty] = useState(null);
+
+  /* NEW: RULES STATE */
+  const [showRules, setShowRules] = useState(true);
 
   /* GAME INITIALIZATION */
   const generateSecret = (mode = difficulty) => {
@@ -276,6 +280,9 @@ function App() {
           <div className="led red"></div>
           <div className="led yellow"></div>
           <div className="led green"></div>
+          <div className="led info-btn" onClick={() => setShowRules(true)}>
+            i
+          </div>
         </div>
       </div>
 
@@ -324,6 +331,7 @@ function App() {
           </div>
         </div>
       )}
+      {showRules && <RulesModal onClose={() => setShowRules(false)} />}
     </div>
   );
 }
