@@ -55,11 +55,13 @@ function App() {
       setUser(parsedUser);
       setIsOpen(true);
       fetchStats(parsedUser.token);
+      resetGame();
     }
   }, []);
 
   /* STATS SERVICES */
   const fetchStats = async (token) => {
+    if (!token) return;
     try {
       const response = await fetch(
         "http://localhost:3333/api/game/my-history",
@@ -76,16 +78,23 @@ function App() {
           wins: wins,
           lastAttempts: lastGame ? lastGame.attempts : 0,
         });
+      } else {
+        setStats({ total: 0, wins: 0, lastAttempts: 0 });
       }
     } catch (err) {
       console.error("Error fetching stats:", err);
+      setStats({ total: 0, wins: 0, lastAttempts: 0 });
     }
   };
 
   /* AUTHENTICATION SERVICES */
   const auth = async () => {
     if (!formData.username || !formData.password) return;
+
+    // Reset states immediately to avoid bleeding between accounts
     setStats({ total: 0, wins: 0, lastAttempts: 0 });
+    resetGame();
+
     try {
       const endpoint = authMode === "login" ? "login" : "register";
       const response = await fetch(
@@ -97,23 +106,41 @@ function App() {
         },
       );
       const data = await response.json();
+
       if (response.ok) {
-        setUser(data);
-        setIsOpen(true);
-        fetchStats(data.token);
-        /* SAVE TO LOCAL STORAGE */
-        localStorage.setItem("pokedex_user", JSON.stringify(data));
+        if (authMode === "register") {
+          setStatusMessage("ACCOUNT CREATED! PLEASE LOGIN");
+          setAuthMode("login");
+          // Clear message after 3 seconds
+          setTimeout(() => setStatusMessage("READY?"), 3000);
+        } else {
+          // Important: we use 'data' directly because 'user' state isn't updated yet
+          localStorage.setItem("pokedex_user", JSON.stringify(data));
+          setUser(data);
+          setIsOpen(true);
+
+          if (data.token) {
+            await fetchStats(data.token);
+          }
+        }
       } else {
-        alert(data.error || "Authentication failed");
+        // Handle incorrect credentials or existing user
+        if (authMode === "login") {
+          setStatusMessage("NAME OR PASSWORD INCORRECT");
+        } else {
+          setStatusMessage(data.error?.toUpperCase() || "AUTH FAILED");
+        }
+        // Clear error message after 3 seconds
+        setTimeout(() => setStatusMessage("READY?"), 3000);
       }
     } catch (err) {
       console.error("Server error:", err);
-      alert("Server is not responding.");
+      setStatusMessage("SERVER ERROR");
+      setTimeout(() => setStatusMessage("READY?"), 3000);
     }
   };
 
   const logout = () => {
-    /* CLEAR LOCAL STORAGE */
     localStorage.removeItem("pokedex_user");
     setUser(null);
     setIsOpen(false);
@@ -124,13 +151,17 @@ function App() {
 
   /* DATA PERSISTENCE */
   const saveGame = async (wonStatus, finalRow) => {
-    if (!user || !user.token) return;
+    // Check local storage if state is not ready
+    const currentUser =
+      user || JSON.parse(localStorage.getItem("pokedex_user"));
+    if (!currentUser || !currentUser.token) return;
+
     try {
       const response = await fetch("http://localhost:3333/api/game/save", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${currentUser.token}`,
         },
         body: JSON.stringify({
           attempts: finalRow + 1,
@@ -138,7 +169,7 @@ function App() {
           secretCode: JSON.stringify(secretCode),
         }),
       });
-      if (response.ok) fetchStats(user.token);
+      if (response.ok) fetchStats(currentUser.token);
     } catch (err) {
       console.error("Failed to save game history:", err);
     }
@@ -178,15 +209,17 @@ function App() {
   const validateAttempt = () => {
     const current = attempts[currentRow];
     if (current.includes(null)) return;
-    // MASTERMIND ALGORITHM
+
     let remainingSecret = [...secretCode];
     let feedback = Array(5).fill("faux");
+
     current.forEach((p, i) => {
       if (p === secretCode[i]) {
         feedback[i] = "correct";
         remainingSecret[i] = null;
       }
     });
+
     current.forEach((p, i) => {
       if (feedback[i] !== "correct") {
         const foundIndex = remainingSecret.indexOf(p);
@@ -196,10 +229,11 @@ function App() {
         }
       }
     });
+
     const updatedResults = [...results];
     updatedResults[currentRow] = feedback;
     setResults(updatedResults);
-    // WIN/LOSS CONDITIONS
+
     if (feedback.every((s) => s === "correct")) {
       setStatusMessage("WINNER!");
       setIsGameOver(true);
@@ -221,7 +255,6 @@ function App() {
 
   return (
     <div className={`pokedex-shell ${isOpen ? "open" : ""}`}>
-      {/* POKEDEX TOP INTERFACE */}
       <div className="pokedex-top-decoration">
         <div
           className={`big-blue-button ${isOpen ? "clickable" : ""}`}
@@ -243,9 +276,9 @@ function App() {
           setFormData={setFormData}
           formData={formData}
           auth={auth}
+          statusMessage={statusMessage}
         />
       ) : (
-        /* ACTIVE GAMEPLAY VIEW */
         <div className="app-container">
           <div className="pokedex-left">
             <InfoScreen

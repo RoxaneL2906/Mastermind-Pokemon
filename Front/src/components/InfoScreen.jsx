@@ -3,7 +3,7 @@ import './InfoScreen.css';
 function InfoScreen({ user, isGameOver, stats, statusMessage, secretCode }) {
   return (
     <div className="info-screen">
-      <h3>{user?.username?.toUpperCase()}</h3>
+      <h3>{user?.username ? user.username.toUpperCase() : "TRAINER"}</h3>
       {!isGameOver ? (
         <div className="stats-display">
           <p>

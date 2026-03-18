@@ -2,14 +2,21 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import "./Auth.css";
 
-function Auth({ authMode, setAuthMode, setFormData, formData, auth }) {
+function Auth({
+  authMode,
+  setAuthMode,
+  setFormData,
+  formData,
+  auth,
+  statusMessage,
+}) {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
     /* LOGIN AND REGISTRATION VIEW */
     <div className="auth-container">
       <div className="auth-box">
-        <h2>{authMode === "login" ? "IDENTIFICATION" : "NEW TRAINER"}</h2>
+        <h2>{authMode === "login" ? "LOGIN" : "NEW TRAINER ? "}</h2>
 
         <input
           type="text"
@@ -37,6 +44,8 @@ function Auth({ authMode, setAuthMode, setFormData, formData, auth }) {
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
         </div>
+
+        {statusMessage && <p className="status-msg">{statusMessage}</p>}
 
         <button onClick={auth}>VALIDATE</button>
 
