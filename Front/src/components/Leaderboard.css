@@ -1,0 +1,87 @@
+.leaderboard-content {
+  max-width: 500px !important;
+  background: #fdfefe !important;
+}
+
+.crown-title {
+  color: #f1c40f;
+  text-shadow: 2px 2px 0px #d4ac0d;
+  margin-bottom: 20px;
+}
+
+.leaderboard-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.leaderboard-tabs button {
+  padding: 8px 20px;
+  border: 2px solid #34495e;
+  background: #ecf0f1;
+  cursor: pointer;
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+  border-radius: 5px;
+}
+
+.leaderboard-tabs button.active {
+  background: #34495e;
+  color: white;
+}
+
+.leaderboard-table {
+  width: 100%;
+  margin-bottom: 20px;
+  border: 2px solid #bdc3c7;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 0.5fr 1.5fr 1fr 1fr;
+  background: #34495e;
+  color: white;
+  padding: 10px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 0.5fr 1.5fr 1fr 1fr;
+  padding: 10px;
+  border-bottom: 1px solid #ecf0f1;
+  font-size: 0.85rem;
+  align-items: center;
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.table-row:nth-child(even) {
+  background: #f9f9f9;
+}
+
+.rank {
+  font-weight: bold;
+  color: #e67e22;
+}
+
+.username {
+  text-align: left;
+  font-weight: bold;
+}
+
+.no-data {
+  padding: 20px;
+  color: #7f8c8d;
+  font-style: italic;
+}
+
+.close-rules {
+  margin-top: 10px;
+}

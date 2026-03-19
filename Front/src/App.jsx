@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
-import confetti from "canvas-confetti";
 import "./App.css";
+
+// Import custom hook
+import { useMastermind } from "./hooks/useMastermind";
 
 import Auth from "./components/Auth";
 import InfoScreen from "./components/InfoScreen";
 import Board from "./components/Board";
 import SelectionArea from "./components/SelectionArea";
 import RulesModal from "./components/RulesModal";
+import Leaderboard from "./components/Leaderboard";
 
 const ALL_POKEMON = [
   "Evoli",
@@ -25,50 +28,29 @@ function App() {
   const [isOpen, setIsOpen] = useState(false);
   const [authMode, setAuthMode] = useState("login");
   const [formData, setFormData] = useState({ username: "", password: "" });
-  const [secretCode, setSecretCode] = useState([]);
-  const [attempts, setAttempts] = useState(
-    Array(10).fill([null, null, null, null, null]),
-  );
-  const [results, setResults] = useState(
-    Array(10).fill([null, null, null, null, null]),
-  );
-  const [currentRow, setCurrentRow] = useState(0);
-  const [statusMessage, setStatusMessage] = useState("READY?");
-  const [isGameOver, setIsGameOver] = useState(false);
 
   /* NEW: STATS STATE */
   const [stats, setStats] = useState({ total: 0, wins: 0, lastAttempts: 0 });
 
-  /* NEW: DIFFICULTY STATE */
-  const [difficulty, setDifficulty] = useState(null);
-
   /* NEW: RULES STATE */
   const [showRules, setShowRules] = useState(true);
 
-  /* GAME INITIALIZATION */
-  const generateSecret = (mode = difficulty) => {
-    // Allows duplicates in the secret code if hard, unique if easy
-    if (!mode) return;
-    let newSecret = [];
-    if (mode === "easy") {
-      newSecret = [...ALL_POKEMON].sort(() => Math.random() - 0.5).slice(0, 5);
-    } else {
-      newSecret = Array(5)
-        .fill(null)
-        .map(() => ALL_POKEMON[Math.floor(Math.random() * ALL_POKEMON.length)]);
-    }
-    setSecretCode(newSecret);
-  };
+  /* NEW: LEADERBOARD STATE */
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+
+  // Use our custom hook for game logic
+  const game = useMastermind(ALL_POKEMON, (won, row, diff, code) =>
+    saveGame(won, row, diff, code),
+  );
 
   useEffect(() => {
-    generateSecret();
     const savedUser = localStorage.getItem("pokedex_user");
     if (savedUser) {
       const parsedUser = JSON.parse(savedUser);
       setUser(parsedUser);
       setIsOpen(true);
       fetchStats(parsedUser.token);
-      resetGame();
+      game.resetGame();
     }
   }, []);
 
@@ -103,10 +85,8 @@ function App() {
   /* AUTHENTICATION SERVICES */
   const auth = async () => {
     if (!formData.username || !formData.password) return;
-
-    // Reset states immediately to avoid bleeding between accounts
     setStats({ total: 0, wins: 0, lastAttempts: 0 });
-    resetGame();
+    game.resetGame();
 
     try {
       const endpoint = authMode === "login" ? "login" : "register";
@@ -122,34 +102,27 @@ function App() {
 
       if (response.ok) {
         if (authMode === "register") {
-          setStatusMessage("ACCOUNT CREATED! PLEASE LOGIN");
+          game.setStatusMessage("ACCOUNT CREATED! PLEASE LOGIN");
           setAuthMode("login");
-          // Clear message after 3 seconds
-          setTimeout(() => setStatusMessage("READY?"), 3000);
+          setTimeout(() => game.setStatusMessage("READY?"), 3000);
         } else {
-          // Important: we use 'data' directly because 'user' state isn't updated yet
           localStorage.setItem("pokedex_user", JSON.stringify(data));
           setUser(data);
           setIsOpen(true);
-
-          if (data.token) {
-            await fetchStats(data.token);
-          }
+          if (data.token) await fetchStats(data.token);
         }
       } else {
-        // Handle incorrect credentials or existing user
         if (authMode === "login") {
-          setStatusMessage("NAME OR PASSWORD INCORRECT");
+          game.setStatusMessage("NAME OR PASSWORD INCORRECT");
         } else {
-          setStatusMessage(data.error?.toUpperCase() || "AUTH FAILED");
+          game.setStatusMessage(data.error?.toUpperCase() || "AUTH FAILED");
         }
-        // Clear error message after 3 seconds
-        setTimeout(() => setStatusMessage("READY?"), 3000);
+        setTimeout(() => game.setStatusMessage("READY?"), 3000);
       }
     } catch (err) {
       console.error("Server error:", err);
-      setStatusMessage("SERVER ERROR");
-      setTimeout(() => setStatusMessage("READY?"), 3000);
+      game.setStatusMessage("SERVER ERROR");
+      setTimeout(() => game.setStatusMessage("READY?"), 3000);
     }
   };
 
@@ -159,12 +132,16 @@ function App() {
     setIsOpen(false);
     setStats({ total: 0, wins: 0, lastAttempts: 0 });
     setFormData({ username: "", password: "" });
-    resetGame();
+    game.resetGame();
   };
 
   /* DATA PERSISTENCE */
-  const saveGame = async (wonStatus, finalRow) => {
-    // Check local storage if state is not ready
+  const saveGame = async (
+    wonStatus,
+    finalRow,
+    currentDifficulty,
+    secretCode,
+  ) => {
     const currentUser =
       user || JSON.parse(localStorage.getItem("pokedex_user"));
     if (!currentUser || !currentUser.token) return;
@@ -180,90 +157,13 @@ function App() {
           attempts: finalRow + 1,
           won: wonStatus,
           secretCode: JSON.stringify(secretCode),
+          difficulty: currentDifficulty,
+          username: currentUser.username,
         }),
       });
       if (response.ok) fetchStats(currentUser.token);
     } catch (err) {
       console.error("Failed to save game history:", err);
-    }
-  };
-
-  /* GAMEPLAY LOGIC AND ACTIONS */
-  const resetGame = () => {
-    setDifficulty(null); // Reset difficulty selection
-    setAttempts(Array(10).fill([null, null, null, null, null]));
-    setResults(Array(10).fill([null, null, null, null, null]));
-    setCurrentRow(0);
-    setStatusMessage("READY?");
-    setIsGameOver(false);
-  };
-
-  const selectPokemon = (name) => {
-    if (isGameOver || !difficulty) return;
-    const updated = [...attempts];
-    const row = [...updated[currentRow]];
-    const index = row.indexOf(null);
-    if (index !== -1) {
-      row[index] = name;
-      updated[currentRow] = row;
-      setAttempts(updated);
-    }
-  };
-
-  const removePokemon = (slotIndex) => {
-    if (isGameOver) return;
-    const updated = [...attempts];
-    const row = [...updated[currentRow]];
-    row[slotIndex] = null;
-    updated[currentRow] = row;
-    setAttempts(updated);
-  };
-
-  const validateAttempt = () => {
-    if (!difficulty) return;
-    const current = attempts[currentRow];
-    if (current.includes(null)) return;
-
-    let remainingSecret = [...secretCode];
-    let feedback = Array(5).fill("faux");
-
-    current.forEach((p, i) => {
-      if (p === secretCode[i]) {
-        feedback[i] = "correct";
-        remainingSecret[i] = null;
-      }
-    });
-
-    current.forEach((p, i) => {
-      if (feedback[i] !== "correct") {
-        const foundIndex = remainingSecret.indexOf(p);
-        if (foundIndex !== -1) {
-          feedback[i] = "deplace";
-          remainingSecret[foundIndex] = null;
-        }
-      }
-    });
-
-    const updatedResults = [...results];
-    updatedResults[currentRow] = feedback;
-    setResults(updatedResults);
-
-    if (feedback.every((s) => s === "correct")) {
-      setStatusMessage("WINNER!");
-      setIsGameOver(true);
-      saveGame(true, currentRow);
-      confetti({
-        particleCount: 150,
-        spread: 70,
-        origin: { y: 0.6 },
-        zIndex: 999,
-      });
-    } else if (currentRow === 9) {
-      setStatusMessage("LOST!");
-      setIsGameOver(true);
-      saveGame(false, currentRow);
-    } else {
-      setCurrentRow(currentRow + 1);
     }
   };
 
@@ -284,6 +184,12 @@ function App() {
             i
           </div>
         </div>
+        <div
+          className="leaderboard-trigger-big"
+          onClick={() => setShowLeaderboard(true)}
+        >
+          👑
+        </div>
       </div>
 
       {!isOpen ? (
@@ -293,45 +199,48 @@ function App() {
           setFormData={setFormData}
           formData={formData}
           auth={auth}
-          statusMessage={statusMessage}
+          statusMessage={game.statusMessage}
         />
       ) : (
         <div className="app-container">
           <div className="pokedex-left">
             <InfoScreen
               user={user}
-              isGameOver={isGameOver}
+              isGameOver={game.isGameOver}
               stats={stats}
-              statusMessage={statusMessage}
-              secretCode={secretCode}
-              difficulty={difficulty}
-              setDifficulty={setDifficulty}
-              generateSecret={generateSecret}
-              attempts={attempts}
+              statusMessage={game.statusMessage}
+              secretCode={game.secretCode}
+              difficulty={game.difficulty}
+              setDifficulty={game.setDifficulty}
+              generateSecret={game.generateSecret}
+              attempts={game.attempts}
             />
-            <button className="check-button" onClick={validateAttempt}>
+            <button className="check-button" onClick={game.validateAttempt}>
               CHECK
             </button>
-            <button className="reset-button" onClick={resetGame}>
+            <button className="reset-button" onClick={game.resetGame}>
               RESET
             </button>
           </div>
           <div className="hinge"></div>
           <div className="pokedex-right">
             <Board
-              attempts={attempts}
-              results={results}
-              currentRow={currentRow}
-              removePokemon={removePokemon}
+              attempts={game.attempts}
+              results={game.results}
+              currentRow={game.currentRow}
+              removePokemon={game.removePokemon}
             />
             <SelectionArea
               ALL_POKEMON={ALL_POKEMON}
-              selectPokemon={selectPokemon}
+              selectPokemon={game.selectPokemon}
             />
           </div>
         </div>
       )}
       {showRules && <RulesModal onClose={() => setShowRules(false)} />}
+      {showLeaderboard && (
+        <Leaderboard onClose={() => setShowLeaderboard(false)} />
+      )}
     </div>
   );
 }
